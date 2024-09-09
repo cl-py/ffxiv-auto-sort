@@ -16,7 +16,7 @@ public sealed class Plugin : IDalamudPlugin
     [PluginService] internal static ICommandManager CommandManager { get; private set; } = null!;
 
     private const string CommandName = "/test";
-    private const string alrightAlright = "/alrightalright"; //creates a new chat command: /alrightalright
+    private const string AlrightAlright = "/alrightalright"; //creates a new chat command: /alrightalright
 
     public Configuration Configuration { get; init; }
 
@@ -43,7 +43,7 @@ public sealed class Plugin : IDalamudPlugin
         });
 
         // a new command handler.
-        CommandManager.AddHandler(alrightAlright, new CommandInfo(alrightAlrightMethod)
+        CommandManager.AddHandler(AlrightAlright, new CommandInfo(AlrightAlrightMethod)
         {
             //add functional code here.
         });
@@ -66,7 +66,7 @@ public sealed class Plugin : IDalamudPlugin
         MainWindow.Dispose();
 
         CommandManager.RemoveHandler(CommandName);
-        CommandManager.RemoveHandler(alrightAlright);
+        CommandManager.RemoveHandler(AlrightAlright);
     }
 
     private void OnCommand(string command, string args)
@@ -75,23 +75,17 @@ public sealed class Plugin : IDalamudPlugin
         ToggleMainUI();
     }
 
-    private void alrightAlrightMethod(string command)
+    private unsafe void AlrightAlrightMethod(string command, string args)
     {
-        //creates an instance of the player's inventory.
-        InventoryManager* inventoryManager = inventoryManager.instance();
+        //creates an instance (object) of the player's inventory.
+        var inventory = InventoryManager.Instance();
 
         //id of "alright alright alright" item
         uint alrightAlrightAlrightId = 43681;
 
         //call to the API with specified parameters.
-        int alrightCount = GetInventoryItemCount(alrightAlrightAlrightId, false, false, false, 0);
+        int alrightCount = inventory->GetInventoryItemCount(alrightAlrightAlrightId, false, false, false, 0);
 
-        if (alrightCount < 1){
-            Console.WriteLine("alright alright alright found");
-        }
-        else{
-            Console.WriteLine("nothing");
-        }
     }
 
     private void DrawUI() => WindowSystem.Draw();
