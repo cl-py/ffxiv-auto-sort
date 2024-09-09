@@ -14,6 +14,7 @@ public sealed class Plugin : IDalamudPlugin
     [PluginService] internal static IDalamudPluginInterface PluginInterface { get; private set; } = null!;
     [PluginService] internal static ITextureProvider TextureProvider { get; private set; } = null!;
     [PluginService] internal static ICommandManager CommandManager { get; private set; } = null!;
+    [PluginService] internal static IChatGui ChatGui { get; private set; } = null!;
 
     private const string CommandName = "/test";
     private const string AlrightAlright = "/alrightalright"; //creates a new chat command: /alrightalright
@@ -45,7 +46,7 @@ public sealed class Plugin : IDalamudPlugin
         // a new command handler.
         CommandManager.AddHandler(AlrightAlright, new CommandInfo(AlrightAlrightMethod)
         {
-            //add functional code here.
+            HelpMessage = "How many alright alright alrights are in your inventory? Let's find out!"
         });
 
         PluginInterface.UiBuilder.Draw += DrawUI;
@@ -85,6 +86,13 @@ public sealed class Plugin : IDalamudPlugin
 
         //call to the API with specified parameters.
         int alrightCount = inventory->GetInventoryItemCount(alrightAlrightAlrightId, false, false, false, 0);
+
+        if (alrightCount > 0){
+            ChatGui.Print("alright alright alright!");
+        }
+        else{
+            ChatGui.Print(":(");
+        }
 
     }
 
