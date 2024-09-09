@@ -9,6 +9,9 @@ using FFXIVClientStructs.FFXIV.Client.Game;
 
 namespace SamplePlugin;
 
+// grabbing delegate from ClientStructs (this is the event we are hooking onto)
+using InventoryChangeDelegate = Dalamud.Plugin.IGameInventory;
+
 public sealed class Plugin : IDalamudPlugin
 {
     [PluginService] internal static IDalamudPluginInterface PluginInterface { get; private set; } = null!;
@@ -95,6 +98,32 @@ public sealed class Plugin : IDalamudPlugin
         }
 
     }
+
+    public unsafe class InventoryHook : IDisposable {
+        private readonly InventoryHook<InventoryChangeDelegate>? _inventoryChangeHook;
+
+        public InventoryHook(){
+            this._inventoryChangeHook = Services.GameInteropProvider.HookFromAddress<InventoryChangeDelegate>(
+                Dalamud.Plugin.IGameInventory, //unsure if this is the right call.
+                this.DetourInventoryChange
+            );
+
+            this._inventoryChangeHook.Enable();
+        }
+
+        private void DetourInventoryChange(Dalamud* self, uint set){
+            ChatGui.Print("An inventory change occured.");
+
+            try{
+
+            } catch (Exception ex){
+                Services.PluginLog.Error(ex, "Error occured when handling hook.");
+            }
+
+            this._inventoryChangeHook.Original(self, set);
+        }
+    }
+
 
     private void DrawUI() => WindowSystem.Draw();
 
