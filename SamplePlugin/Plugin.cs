@@ -71,6 +71,8 @@ public sealed class Plugin : IDalamudPlugin
 
         CommandManager.RemoveHandler(CommandName);
         CommandManager.RemoveHandler(AlrightAlright);
+
+        this._inventoryChangeHook?.Dispose(); //this may have to be in a separate dispose() function declared in the InventoryHook class.
     }
 
     private void OnCommand(string command, string args)
