@@ -1,6 +1,6 @@
 {
-  "Author": "your name here",
-  "Name": "Sample Plugin",
+  "Author": "cl-py, bacoburn",
+  "Name": "Auto-Sort",
   "Punchline": "A short one-liner that shows up in /xlplugins.",
   "Description": "A description that shows up in /xlplugins. List any major slash-command(s).",
   "ApplicableVersion": "any",

@@ -6,11 +6,14 @@ using Dalamud.Interface.Windowing;
 using Dalamud.Plugin.Services;
 using SamplePlugin.Windows;
 using FFXIVClientStructs.FFXIV.Client.Game;
+using System;
+using Dalamud.Hooking;
+
 
 namespace SamplePlugin;
 
 // grabbing delegate from ClientStructs (this is the event we are hooking onto)
-using InventoryChangeDelegate = Dalamud.Plugin.IGameInventory;
+using InventoryChangeDelegate = IGameInventory;
 
 public sealed class Plugin : IDalamudPlugin
 {
@@ -72,7 +75,7 @@ public sealed class Plugin : IDalamudPlugin
         CommandManager.RemoveHandler(CommandName);
         CommandManager.RemoveHandler(AlrightAlright);
 
-        this._inventoryChangeHook?.Dispose(); //this may have to be in a separate dispose() function declared in the InventoryHook class.
+        //this._inventoryChangeHook?.Dispose(); //this may have to be in a separate dispose() function declared in the InventoryHook class.
     }
 
     private void OnCommand(string command, string args)
@@ -102,18 +105,23 @@ public sealed class Plugin : IDalamudPlugin
     }
 
     public unsafe class InventoryHook : IDisposable {
-        private readonly InventoryHook<InventoryChangeDelegate>? _inventoryChangeHook;
+        private readonly Hook<InventoryChangeDelegate>? inventoryChangeHook;
 
         public InventoryHook(){
             this._inventoryChangeHook = Services.GameInteropProvider.HookFromAddress<InventoryChangeDelegate>(
-                Dalamud.Plugin.IGameInventory, //unsure if this is the right call.
+                IGameInventory, //unsure if this is the right call.
                 this.DetourInventoryChange
             );
 
             this._inventoryChangeHook.Enable();
         }
 
-        private void DetourInventoryChange(Dalamud* self, uint set){
+        public void Dispose()
+        {
+            inventoryChangeHook.Dispose();
+        }
+
+        private void DetourInventoryChange(IGameInventory* self, uint set){
             ChatGui.Print("An inventory change occured.");
 
             try{
