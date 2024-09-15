@@ -7,15 +7,12 @@ using Dalamud.Plugin.Services;
 using SamplePlugin.Windows;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using System;
-using Dalamud.Hooking;
 using System.Runtime.InteropServices;
 using Dalamud.Game.Inventory;
-
+using System.Collections.Generic;
+using Dalamud.Game.Inventory.InventoryEventArgTypes;
 
 namespace SamplePlugin;
-
-// grabbing delegate from ClientStructs (this is the event we are hooking onto)
-using InventoryChangeDelegate = IGameInventory.InventoryChangedDelegate;
 
 public sealed class Plugin : IDalamudPlugin
 {
@@ -24,6 +21,8 @@ public sealed class Plugin : IDalamudPlugin
     [PluginService] internal static ICommandManager CommandManager { get; private set; } = null!;
     [PluginService] internal static IChatGui ChatGui { get; private set; } = null!;
     [PluginService] internal static IGameInteropProvider GameInteropProvider { get; private set; } = null!;
+
+    [PluginService] private IGameInventory? GameInventory { get; set; }
 
     private const string CommandName = "/test";
     private const string AlrightAlright = "/alrightalright"; //creates a new chat command: /alrightalright
@@ -108,32 +107,36 @@ public sealed class Plugin : IDalamudPlugin
     }
 
     public unsafe class InventoryHook : IDisposable {
-        private readonly Hook<IGameInventory.InventoryChangedDelegate>? inventoryChangeHook;
+        private readonly IGameInventory? gameInventory;
 
         public InventoryHook(){
+            if (this.gameInventory != null){
 
-            inventoryChangeHook = GameInteropProvider.HookFromAddress<IGameInventory.InventoryChangedDelegate>(
-                IGameInventory.InventoryChanged
-            );
+                this.gameInventory.InventoryChanged += DetourInventoryChange;
 
-            this.inventoryChangeHook.Enable();
+            }
+            else
+            {
+                ChatGui.Print("GameInventory is null. Hook not set.");
+            }
         }
 
         public void Dispose()
         {
-            inventoryChangeHook.Dispose();
+            if (this.gameInventory != null){
+                this.gameInventory.InventoryChanged -= DetourInventoryChange;
+            }
         }
 
-        private void DetourInventoryChange(IGameInventory* self, uint set){
+        private void DetourInventoryChange(IReadOnlyCollection<InventoryEventArgs> events){
             ChatGui.Print("An inventory change occured.");
 
             try{
 
-            } catch (Exception ex){
-                Services.PluginLog.Error(ex, "Error occured when handling hook.");
+            } catch (Exception){
+                ChatGui.Print("Error occured when handling hook.");
             }
 
-            this.inventoryChangeHook.Original(self, set);
         }
     }
 
