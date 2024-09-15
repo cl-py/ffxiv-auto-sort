@@ -8,12 +8,14 @@ using SamplePlugin.Windows;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using System;
 using Dalamud.Hooking;
+using System.Runtime.InteropServices;
+using Dalamud.Game.Inventory;
 
 
 namespace SamplePlugin;
 
 // grabbing delegate from ClientStructs (this is the event we are hooking onto)
-using InventoryChangeDelegate = IGameInventory;
+using InventoryChangeDelegate = IGameInventory.InventoryChangedDelegate;
 
 public sealed class Plugin : IDalamudPlugin
 {
@@ -21,6 +23,7 @@ public sealed class Plugin : IDalamudPlugin
     [PluginService] internal static ITextureProvider TextureProvider { get; private set; } = null!;
     [PluginService] internal static ICommandManager CommandManager { get; private set; } = null!;
     [PluginService] internal static IChatGui ChatGui { get; private set; } = null!;
+    [PluginService] internal static IGameInteropProvider GameInteropProvider { get; private set; } = null!;
 
     private const string CommandName = "/test";
     private const string AlrightAlright = "/alrightalright"; //creates a new chat command: /alrightalright
@@ -30,7 +33,7 @@ public sealed class Plugin : IDalamudPlugin
     public readonly WindowSystem WindowSystem = new("iHATEffxiv");
     private ConfigWindow ConfigWindow { get; init; }
     private MainWindow MainWindow { get; init; }
-
+    
     public Plugin()
     {
         Configuration = PluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
@@ -105,15 +108,15 @@ public sealed class Plugin : IDalamudPlugin
     }
 
     public unsafe class InventoryHook : IDisposable {
-        private readonly Hook<InventoryChangeDelegate>? inventoryChangeHook;
+        private readonly Hook<IGameInventory.InventoryChangedDelegate>? inventoryChangeHook;
 
         public InventoryHook(){
-            this._inventoryChangeHook = Services.GameInteropProvider.HookFromAddress<InventoryChangeDelegate>(
-                IGameInventory, //unsure if this is the right call.
-                this.DetourInventoryChange
+
+            inventoryChangeHook = GameInteropProvider.HookFromAddress<IGameInventory.InventoryChangedDelegate>(
+                IGameInventory.InventoryChanged
             );
 
-            this._inventoryChangeHook.Enable();
+            this.inventoryChangeHook.Enable();
         }
 
         public void Dispose()
@@ -130,7 +133,7 @@ public sealed class Plugin : IDalamudPlugin
                 Services.PluginLog.Error(ex, "Error occured when handling hook.");
             }
 
-            this._inventoryChangeHook.Original(self, set);
+            this.inventoryChangeHook.Original(self, set);
         }
     }
 
