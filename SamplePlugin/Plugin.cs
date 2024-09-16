@@ -27,6 +27,8 @@ public sealed class Plugin : IDalamudPlugin
     private const string CommandName = "/test";
     private const string AlrightAlright = "/alrightalright"; //creates a new chat command: /alrightalright
 
+    private InventoryHook? inventoryHook; //creates field for inventoryhook.
+
     public Configuration Configuration { get; init; }
 
     public readonly WindowSystem WindowSystem = new("iHATEffxiv");
@@ -65,6 +67,15 @@ public sealed class Plugin : IDalamudPlugin
 
         // Adds another button that is doing the same but for the main ui of the plugin
         PluginInterface.UiBuilder.OpenMainUi += ToggleMainUI;
+
+        if (GameInventory != null)
+        {
+            inventoryHook = new InventoryHook();
+        }
+        else
+        {
+            ChatGui.Print("GameInventory not available.");
+        }
     }
 
     public void Dispose()
@@ -77,7 +88,7 @@ public sealed class Plugin : IDalamudPlugin
         CommandManager.RemoveHandler(CommandName);
         CommandManager.RemoveHandler(AlrightAlright);
 
-        //this._inventoryChangeHook?.Dispose(); //this may have to be in a separate dispose() function declared in the InventoryHook class.
+        if (inventoryHook != null) {inventoryHook.Dispose();}
     }
 
     private void OnCommand(string command, string args)
