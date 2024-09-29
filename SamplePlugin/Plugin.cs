@@ -68,9 +68,11 @@ public sealed class Plugin : IDalamudPlugin
         // Adds another button that is doing the same but for the main ui of the plugin
         PluginInterface.UiBuilder.OpenMainUi += ToggleMainUI;
 
+        // should never be null.
         if (GameInventory != null)
         {
             inventoryHook = new InventoryHook(GameInventory);
+            ChatGui.Print("Inventoryhook instance created.");
         }
         else
         {
