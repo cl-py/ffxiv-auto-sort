@@ -120,18 +120,15 @@ public sealed class Plugin : IDalamudPlugin
     }
 
     public unsafe class InventoryHook : IDisposable {
-        private readonly IGameInventory? gameInventory;
+        private readonly IGameInventory gameInventory;
 
         public InventoryHook(IGameInventory gameInventory){
-            if (this.gameInventory != null){
+
+                this.gameInventory = gameInventory;
 
                 this.gameInventory.InventoryChanged += DetourInventoryChange;
 
-            }
-            else
-            {
-                ChatGui.Print("GameInventory is null. Hook not set.");
-            }
+
         }
 
         public void Dispose()
