@@ -70,7 +70,7 @@ public sealed class Plugin : IDalamudPlugin
 
         if (GameInventory != null)
         {
-            inventoryHook = new InventoryHook();
+            inventoryHook = new InventoryHook(GameInventory);
         }
         else
         {
@@ -120,7 +120,7 @@ public sealed class Plugin : IDalamudPlugin
     public unsafe class InventoryHook : IDisposable {
         private readonly IGameInventory? gameInventory;
 
-        public InventoryHook(){
+        public InventoryHook(IGameInventory gameInventory){
             if (this.gameInventory != null){
 
                 this.gameInventory.InventoryChanged += DetourInventoryChange;
